@@ -13,7 +13,7 @@
 	"require" : {
 		"php" : ">=5.3.2",
 		"symfony/framework-bundle" : ">=2.1.0,<2.4-dev",
-		"twitter/bootstrap" : "3.0.0-RC1"
+		"twbs/bootstrap": "dev-3.0.0-wip"
 	},
 	"autoload" : {
 		"psr-0" : {
