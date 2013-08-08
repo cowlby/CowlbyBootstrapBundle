@@ -22,6 +22,9 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
+            ->scalarNode('assets_dir')
+                ->defaultValue('%kernel.root_dir%/../vendor/twbs/bootstrap')
+            ->end()
             ->arrayNode('dist_mode')
                 ->addDefaultsIfNotSet()
                 ->treatTrueLike(array('enabled' => true))
