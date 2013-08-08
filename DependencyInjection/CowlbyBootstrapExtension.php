@@ -37,25 +37,24 @@ class CowlbyBootstrapExtension extends Extension implements PrependExtensionInte
 
         $assetic = array();
         $assetic['filters']['cssrewrite'] = null;
-        $rootDir = '%kernel.root_dir%/../vendor/twitter/bootstrap';
 
         if ($config['dist_mode']['enabled']) {
 
             $jsFile = $config['dist_mode']['use_minified'] ? 'bootstrap.min.js' : 'bootstrap.js';
             $cssFile = $config['dist_mode']['use_minified'] ? 'bootstrap.min.css' : 'bootstrap.css';
 
-            $assetic['assets']['bootstrap_js']['inputs'][] = $rootDir . "/dist/js/$jsFile";
-            $assetic['assets']['bootstrap_css']['inputs'][] = $rootDir . "/dist/css/$cssFile";
+            $assetic['assets']['bootstrap_js']['inputs'][] = $config['assets_dir'] . "/dist/js/$jsFile";
+            $assetic['assets']['bootstrap_css']['inputs'][] = $config['assets_dir'] . "/dist/css/$cssFile";
             $assetic['assets']['bootstrap_css']['filters'][] = 'cssrewrite';
 
         } else {
 
-            $assetic['assets']['bootstrap_css']['inputs'][] = $rootDir . '/less/bootstrap.less';
+            $assetic['assets']['bootstrap_css']['inputs'][] = $config['assets_dir'] . '/less/bootstrap.less';
             $assetic['assets']['bootstrap_css']['filters'][] = 'cssrewrite';
 
             foreach ($config['plugins'] as $plugin => $enabled) {
                 if ($enabled) {
-                    $assetic['assets']['bootstrap_js']['inputs'][] = $rootDir . "/js/$plugin.js";
+                    $assetic['assets']['bootstrap_js']['inputs'][] = $config['assets_dir'] . "/js/$plugin.js";
                 }
             }
         }
