@@ -22,93 +22,140 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
-            ->scalarNode('assets_dir')
-                ->defaultValue('%kernel.root_dir%/../vendor/twbs/bootstrap')
-            ->end()
-
-            ->arrayNode('dist_mode')
-                ->addDefaultsIfNotSet()
-                ->treatFalseLike(array('enabled' => false))
-                ->treatTrueLike(array('enabled' => true))
-                ->treatNullLike(array('enabled' => true))
-                ->children()
-                    ->booleanNode('enabled')->defaultValue('%kernel.debug%')->end()
-                    ->booleanNode('use_minified')->defaultTrue()->end()
+                ->scalarNode('assets_dir')
+                    ->defaultValue('%kernel.root_dir%/../vendor/twbs/bootstrap')
+                ->end()
+                ->arrayNode('dist_mode')
+                    ->canBeDisabled()
+                    ->children()
+                        ->booleanNode('use_minified')->defaultTrue()->end()
+                    ->end()
+                ->end()
+                ->arrayNode('theme')
+                    ->canBeEnabled()
                 ->end()
             ->end()
-
-            ->arrayNode('common_css')
-                ->children()
-                    ->booleanNode('print_media_styles')->defaultFalse()->end()
-                    ->booleanNode('typography')->defaultFalse()->end()
-                    ->booleanNode('code')->defaultFalse()->end()
-                    ->booleanNode('grid_system')->defaultFalse()->end()
-                    ->booleanNode('tables')->defaultFalse()->end()
-                    ->booleanNode('forms')->defaultFalse()->end()
-                    ->booleanNode('buttons')->defaultFalse()->end()
-                ->end()
-            ->end()
-
-            ->arrayNode('components')
-                ->children()
-                    ->booleanNode('glyphicons')->defaultFalse()->end()
-                    ->booleanNode('button_groups')->defaultFalse()->end()
-                    ->booleanNode('input_groups')->defaultFalse()->end()
-                    ->booleanNode('navs')->defaultFalse()->end()
-                    ->booleanNode('navbar')->defaultFalse()->end()
-                    ->booleanNode('breadcrumbs')->defaultFalse()->end()
-                    ->booleanNode('pagination')->defaultFalse()->end()
-                    ->booleanNode('pager')->defaultFalse()->end()
-                    ->booleanNode('labels')->defaultFalse()->end()
-                    ->booleanNode('badges')->defaultFalse()->end()
-                    ->booleanNode('jumbotron')->defaultFalse()->end()
-                    ->booleanNode('thumbnails')->defaultFalse()->end()
-                    ->booleanNode('alerts')->defaultFalse()->end()
-                    ->booleanNode('progress_bars')->defaultFalse()->end()
-                    ->booleanNode('media_items')->defaultFalse()->end()
-                    ->booleanNode('list_groups')->defaultFalse()->end()
-                    ->booleanNode('panels')->defaultFalse()->end()
-                    ->booleanNode('wells')->defaultFalse()->end()
-                    ->booleanNode('close_icon')->defaultFalse()->end()
-                ->end()
-            ->end()
-
-            ->arrayNode('javascript_components')
-                ->children()
-                    ->booleanNode('dropdowns')->defaultFalse()->end()
-                    ->booleanNode('tooltips')->defaultFalse()->end()
-                    ->booleanNode('popovers')->defaultFalse()->end()
-                    ->booleanNode('modals')->defaultFalse()->end()
-                    ->booleanNode('carousel')->defaultFalse()->end()
-                ->end()
-            ->end()
-
-            ->arrayNode('utilities')
-                ->children()
-                    ->booleanNode('basic_utilities')->defaultFalse()->end()
-                    ->booleanNode('responsive_utilities')->defaultFalse()->end()
-                    ->booleanNode('component_animations')->defaultFalse()->end()
-                ->end()
-            ->end()
-
-            ->arrayNode('plugins')
-                ->children()
-                    ->booleanNode('affix')->defaultFalse()->end()
-                    ->booleanNode('alert_dismissal')->defaultFalse()->end()
-                    ->booleanNode('advanced_buttons')->defaultFalse()->end()
-                    ->booleanNode('carousel')->defaultFalse()->end()
-                    ->booleanNode('collapse')->defaultFalse()->end()
-                    ->booleanNode('dropdowns')->defaultFalse()->end()
-                    ->booleanNode('modals')->defaultFalse()->end()
-                    ->booleanNode('popovers')->defaultFalse()->end()
-                    ->booleanNode('scrollspy')->defaultFalse()->end()
-                    ->booleanNode('tabs')->defaultFalse()->end()
-                    ->booleanNode('tooltips')->defaultFalse()->end()
-                    ->booleanNode('transitions')->defaultFalse()->end()
-                ->end()
-            ->end()
+            ->append($this->addLessFilesNode())
+            ->append($this->addPluginsNode())
         ;
 
         return $treeBuilder;
+    }
+
+    public function addLessFilesNode()
+    {
+        $builder = new TreeBuilder();
+        $node = $builder->root('less_files');
+
+        $node
+            ->addDefaultsIfNotSet()
+            ->treatTrueLike(array(
+                'components' => true,
+                'javascript_components' => true,
+                'utilities' => true
+            ))
+            ->treatFalseLike(array(
+                'components' => false,
+                'javascript_components' => false,
+                'utilities' => false
+            ))
+            ->append($this->addFileNode('common_css', array(
+                'print_media_styles',
+                'typography',
+                'code',
+                'grid_system',
+                'tables',
+                'forms',
+                'buttons'
+            )))
+            ->append($this->addFileNode('components', array(
+                'glyphicons',
+                'button_groups',
+                'input_groups',
+                'navs',
+                'navbar',
+                'breadcrumbs',
+                'pagination',
+                'pager',
+                'labels',
+                'badges',
+                'jumbotron',
+                'thumbnails',
+                'alerts',
+                'progress_bars',
+                'media_items',
+                'list_groups',
+                'panels',
+                'wells',
+                'close_icon'
+            )))
+            ->append($this->addFileNode('javascript_components', array(
+                'dropdowns',
+                'tooltips',
+                'popovers',
+                'modals',
+                'carousel'
+            )))
+            ->append($this->addFileNode('utilities', array(
+                'basic_utilities',
+                'responsive_utilities',
+                'component_animations'
+            )))
+        ->end();
+
+        return $node;
+    }
+
+    public function addPluginsNode()
+    {
+        $builder = new TreeBuilder();
+        $node = $builder->root('plugins');
+
+        $node
+            ->addDefaultsIfNotSet()
+            ->treatTrueLike(array(
+                'components' => true,
+                'magic' => true
+            ))
+            ->treatFalseLike(array(
+                'components' => false,
+                'magic' => false
+            ))
+            ->append($this->addFileNode('components', array(
+                'alert_dismissal',
+                'advanced_buttons',
+                'carousel',
+                'dropdowns',
+                'modals',
+                'popovers',
+                'tabs',
+                'tooltips'
+            )))
+            ->append($this->addFileNode('magic', array(
+                'affix',
+                'collapse',
+                'scrollspy',
+                'transitions'
+            )))
+        ;
+
+        return $node;
+    }
+
+    public function addFileNode($name, array $files)
+    {
+        $builder = new TreeBuilder();
+        $node = $builder->root($name);
+
+        $node->treatTrueLike(array_fill_keys($files, true));
+        $node->treatFalseLike(array_fill_keys($files, false));
+
+        foreach ($files as $file) {
+            $node->children()->booleanNode($file)->defaultFalse()->end();
+        }
+
+        $node->children()->end();
+
+        return $node;
     }
 }

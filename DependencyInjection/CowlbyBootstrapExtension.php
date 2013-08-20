@@ -15,6 +15,70 @@ use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
  */
 class CowlbyBootstrapExtension extends Extension implements PrependExtensionInterface
 {
+    protected static $lessFiles = array(
+        'common_css' => array(
+            'print_media_styles' => array('print.less'),
+            'typography'         => array('type.less'),
+            'code'               => array('code.less'),
+            'grid_system'        => array('grid.less'),
+            'tables'             => array('tables.less'),
+            'forms'              => array('forms.less'),
+            'buttons'            => array('buttons.less')
+        ),
+        'components' => array(
+            'glyphicons'    => array('glyphicons.less'),
+            'button_groups' => array('buttons.less', 'button-groups.less'),
+            'input_groups'  => array('forms.less', 'input-groups.less'),
+            'navs'          => array('navs.less'),
+            'navbar'        => array('forms.less', 'utilities.less', 'navs.less', 'navbar.less'),
+            'breadcrumbs'   => array('breadcrumbs.less'),
+            'pagination'    => array('pagination.less'),
+            'pager'         => array('pager.less'),
+            'labels'        => array('labels.less'),
+            'badges'        => array('badges.less'),
+            'jumbotron'     => array('jumbotron.less'),
+            'thumbnails'    => array('thumbnails.less'),
+            'alerts'        => array('alerts.less'),
+            'progress_bars' => array('progress-bars.less'),
+            'media_items'   => array('media.less'),
+            'list_groups'   => array('list-group.less'),
+            'panels'        => array('panels.less'),
+            'wells'         => array('wells.less'),
+            'close_icon'    => array('close.less')
+        ),
+        'javascript_components' => array(
+            'dropdowns' => array('dropdowns.less'),
+            'tooltips'  => array('tooltip.less'),
+            'popovers'  => array('popovers.less'),
+            'modals'    => array('modals.less'),
+            'carousel'  => array('carousel.less')
+        ),
+        'utilities' => array(
+            'basic_utilities'      => array('utilities.less'),
+            'responsive_utilities' => array('responsive-utilities.less'),
+            'component_animations' => array('component-animations.less')
+        )
+    );
+
+    protected static $plugins = array(
+        'components' => array(
+            'alert_dismissal'  => array('alert.js'),
+            'advanced_buttons' => array('button.js'),
+            'carousel'         => array('carousel.js'),
+            'dropdowns'        => array('dropdown.js'),
+            'modals'           => array('modal.js'),
+            'popovers'         => array('tooltip.js', 'popover.js'),
+            'tabs'             => array('tab.js'),
+            'tooltips'         => array('tooltip.js'),
+        ),
+        'magic' => array(
+            'affix'       => array('affix.js'),
+            'collapse'    => array('collapse.js'),
+            'scrollspy'   => array('scrollspy.js'),
+            'transitions' => array('transition.js')
+        )
+    );
+
     /**
      * {@inheritDoc}
      */
@@ -47,15 +111,50 @@ class CowlbyBootstrapExtension extends Extension implements PrependExtensionInte
             $assetic['assets']['bootstrap_css']['inputs'][] = $config['assets_dir'] . "/dist/css/$cssFile";
             $assetic['assets']['bootstrap_css']['filters'][] = 'cssrewrite';
 
+            if ($config['theme']['enabled']) {
+
+                $themeFile = $config['dist_mode']['use_minified'] ? 'bootstrap-theme.min.css' : 'bootstrap-theme.css';
+                $assetic['assets']['bootstrap_css']['inputs'][] = $config['assets_dir'] . "/dist/css/$themeFile";
+            }
+
         } else {
 
-            $assetic['assets']['bootstrap_css']['inputs'][] = $config['assets_dir'] . '/less/bootstrap.less';
-            $assetic['assets']['bootstrap_css']['filters'][] = 'cssrewrite';
 
-            foreach ($config['plugins'] as $plugin => $enabled) {
-                if ($enabled) {
-                    $assetic['assets']['bootstrap_js']['inputs'][] = $config['assets_dir'] . "/js/$plugin.js";
+            $cssInputs = array();
+            $cssInputs[] = $config['assets_dir'] . '/less/variables.less';
+            $cssInputs[] = $config['assets_dir'] . '/less/mixins.less';
+            $cssInputs[] = $config['assets_dir'] . '/less/normalize.less';
+            $cssInputs[] = $config['assets_dir'] . '/less/scaffolding.less';
+            foreach ($config['less_files'] as $section => $files) {
+                foreach ($files as $file => $enabled) {
+                    if ($enabled) {
+                        foreach (self::$lessFiles[$section][$file] as $lessFile) {
+                            $cssInputs[] = $config['assets_dir'] . '/less/' . $lessFile;
+                        }
+                    }
                 }
+            }
+
+            $assetic['assets']['bootstrap_css']['filters'][] = 'cssrewrite';
+            $assetic['assets']['bootstrap_css']['inputs'] = array_unique($cssInputs);
+
+            if ($config['theme']['enabled']) {
+                $assetic['assets']['bootstrap_css']['inputs'][] = $config['assets_dir'] . '/less/theme.less';
+            }
+
+            $jsInputs = array();
+            foreach ($config['plugins'] as $section => $files) {
+                foreach ($files as $file => $enabled) {
+                    if ($enabled) {
+                        foreach (self::$plugins[$section][$file] as $plugin) {
+                            $jsInputs[] = $config['assets_dir'] . '/js/' . $plugin;
+                        }
+                    }
+                }
+            }
+
+            if (count($jsInputs) > 0) {
+                $assetic['assets']['bootstrap_js']['inputs'] = array_unique($jsInputs);
             }
         }
 
