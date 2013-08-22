@@ -119,24 +119,26 @@ class CowlbyBootstrapExtension extends Extension implements PrependExtensionInte
 
         } else {
 
-
-            $cssInputs = array();
-            $cssInputs[] = $config['assets_dir'] . '/less/variables.less';
-            $cssInputs[] = $config['assets_dir'] . '/less/mixins.less';
-            $cssInputs[] = $config['assets_dir'] . '/less/normalize.less';
-            $cssInputs[] = $config['assets_dir'] . '/less/scaffolding.less';
+            $cssFiles = array('variables.less', 'mixins.less', 'normalize.less', 'scaffolding.less');
             foreach ($config['less_files'] as $section => $files) {
                 foreach ($files as $file => $enabled) {
                     if ($enabled) {
                         foreach (self::$lessFiles[$section][$file] as $lessFile) {
-                            $cssInputs[] = $config['assets_dir'] . '/less/' . $lessFile;
+                            $cssFiles[] = $lessFile;
                         }
                     }
                 }
             }
 
+            $bootstrapCss = $container->getParameter('kernel.cache_dir') . '/cowlby_bootstrap/bootstrap.less';
+            $handle = fopen($bootstrapCss, 'w+');
+
+            foreach (array_unique($cssFiles) as $file) {
+                fwrite($handle, sprintf("@import \"%s/less/%s\";\n", $config['assets_dir'], $file));
+            }
+
             $assetic['assets']['bootstrap_css']['filters'][] = 'cssrewrite';
-            $assetic['assets']['bootstrap_css']['inputs'] = array_unique($cssInputs);
+            $assetic['assets']['bootstrap_css']['inputs'][] = $bootstrapCss;
 
             if ($config['theme']['enabled']) {
                 $assetic['assets']['bootstrap_css']['inputs'][] = $config['assets_dir'] . '/less/theme.less';
@@ -157,6 +159,9 @@ class CowlbyBootstrapExtension extends Extension implements PrependExtensionInte
                 $assetic['assets']['bootstrap_js']['inputs'] = array_unique($jsInputs);
             }
         }
+
+        print_r($assetic);
+        die;
 
         $container->prependExtensionConfig('assetic', $assetic);
     }
