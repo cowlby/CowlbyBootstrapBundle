@@ -160,9 +160,6 @@ class CowlbyBootstrapExtension extends Extension implements PrependExtensionInte
             }
         }
 
-        print_r($assetic);
-        die;
-
         $container->prependExtensionConfig('assetic', $assetic);
     }
 }
